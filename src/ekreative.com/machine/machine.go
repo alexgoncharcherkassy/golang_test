@@ -171,9 +171,9 @@ func CompareItems(result map[int][]int, products []int, processedBuckets map[int
 			beforeLength := len(notFoundInBucket)
 			bItem := MakeCopy(item)
 			for _, bucketItem := range bItem {
-				for _, val := range notFoundInBucket {
+				for k, val := range notFoundInBucket {
 					if bucketItem == val {
-						notFoundInBucket = notFoundInBucket[1:]
+						notFoundInBucket = append(notFoundInBucket[:k], notFoundInBucket[k+1:]...)
 						numberProcessedElem++
 						break
 					}

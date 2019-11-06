@@ -125,13 +125,13 @@ func ParseGetting() []string {
 func PrintMachine(m machine.Machine) {
 	fmt.Println("-------------------------")
 
-	for _, bucket := range m.Buckets() {
+	for i := 1; i <= len(m.Buckets()); i++ {
 		fmt.Print("[ ")
-		for _, val := range bucket.Elements() {
+		for _, val := range m.Buckets()[i].Elements() {
 			fmt.Printf("%v ", val.Name())
 		}
 		fmt.Print("] ")
-		fmt.Printf("(%v)  ", len(bucket.Elements()))
+		fmt.Printf("(%v)  ", len(m.Buckets()[i].Elements()))
 	}
 
 	fmt.Println()
