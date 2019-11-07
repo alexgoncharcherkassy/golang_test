@@ -15,11 +15,25 @@ func (m Machine) Buckets() map[int]Bucket {
 	return m.buckets
 }
 
-func (m Machine) GetCurrentNumberOfProducts() int {
+func (m Machine) BucketProducts(bucketNumber int) []product.Product {
+	if val, ok := m.buckets[bucketNumber]; ok {
+		return val.elements
+	}
+
+	return []product.Product{}
+}
+
+func (m Machine) GetCurrentNumberOfProducts(bucketNumber int) int {
 	var numberOfProducts int
 
-	for _, val := range m.buckets {
-		numberOfProducts = numberOfProducts + len(val.elements)
+	for key, val := range m.buckets {
+		if bucketNumber > 0 {
+			if key == bucketNumber {
+				numberOfProducts = numberOfProducts + len(val.elements)
+			}
+		} else {
+			numberOfProducts = numberOfProducts + len(val.elements)
+		}
 	}
 
 	return numberOfProducts

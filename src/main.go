@@ -127,13 +127,13 @@ func PrintMachine(m machine.Machine) {
 
 	for i := 1; i <= len(m.Buckets()); i++ {
 		fmt.Print("[ ")
-		for _, val := range m.Buckets()[i].Elements() {
+		for _, val := range m.BucketProducts(i) {
 			fmt.Printf("%v ", val.Name())
 		}
 		fmt.Print("] ")
-		fmt.Printf("(%v)  ", len(m.Buckets()[i].Elements()))
+		fmt.Printf("(%v)  ", m.GetCurrentNumberOfProducts(i))
 	}
-	fmt.Printf("  Total number of products: %v", m.GetCurrentNumberOfProducts())
+	fmt.Printf("  Total number of products: %v", m.GetCurrentNumberOfProducts(-1))
 	fmt.Println()
 }
 
