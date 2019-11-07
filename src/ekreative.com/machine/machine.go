@@ -38,7 +38,7 @@ func InArray(needle int, source []int) bool {
 	return isPresent
 }
 
-func (m *Machine) GetProducts(products []int) ([]int, error) {
+func findAvailableProducts(m *Machine, products []int) map[int][]int {
 	currentPositions := map[int]int{}
 	result := map[int][]int{}
 
@@ -68,12 +68,18 @@ func (m *Machine) GetProducts(products []int) ([]int, error) {
 		}
 	}
 
+	return result
+}
+
+func (m *Machine) GetProducts(products []int) ([]int, error) {
+	result := findAvailableProducts(m, products)
+
 	var foundProducts []int
 
 	if len(result) > 0 {
 		processedBuckets := map[int]int{}
 
-		result = CompareItems(result, products, processedBuckets, -1, -1)
+		result = CompareProductsWithOrder(result, products, processedBuckets, -1, -1)
 
 		for bucketNumber, item := range result {
 			for _, val := range item {
@@ -138,7 +144,7 @@ func MakeCopy(source []int) []int {
 	return copySlice
 }
 
-func CompareItems(result map[int][]int, products []int, processedBuckets map[int]int, baseBucket int, baseBucketPosition int) map[int][]int {
+func CompareProductsWithOrder(result map[int][]int, products []int, processedBuckets map[int]int, baseBucket int, baseBucketPosition int) map[int][]int {
 	var baseBucketItem []int
 	var baseBucketNumber int
 	tmpResult := map[int][]int{}
@@ -198,6 +204,7 @@ func CompareItems(result map[int][]int, products []int, processedBuckets map[int
 	if len(notFoundInBucket) > 0 {
 		baseBucketItem = tmpResult[baseBucketNumber]
 		var position int
+
 		if len(baseBucketItem) > 0 {
 			baseBucketItem = baseBucketItem[:len(baseBucketItem)-1]
 			position = len(baseBucketItem)
@@ -215,7 +222,7 @@ func CompareItems(result map[int][]int, products []int, processedBuckets map[int
 			baseBucketNumber = GetMaxLenBucket(result, processedBuckets)
 		}
 
-		tmpResult = CompareItems(result, products, processedBuckets, baseBucketNumber, position)
+		tmpResult = CompareProductsWithOrder(result, products, processedBuckets, baseBucketNumber, position)
 	}
 
 	return tmpResult
