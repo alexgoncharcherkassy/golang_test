@@ -133,7 +133,7 @@ func PrintMachine(m machine.Machine) {
 		fmt.Print("] ")
 		fmt.Printf("(%v)  ", len(m.Buckets()[i].Elements()))
 	}
-
+	fmt.Printf("  Total number of products: %v", m.GetCurrentNumberOfProducts())
 	fmt.Println()
 }
 

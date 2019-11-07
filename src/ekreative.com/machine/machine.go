@@ -15,6 +15,16 @@ func (m Machine) Buckets() map[int]Bucket {
 	return m.buckets
 }
 
+func (m Machine) GetCurrentNumberOfProducts() int {
+	var numberOfProducts int
+
+	for _, val := range m.buckets {
+		numberOfProducts = numberOfProducts + len(val.elements)
+	}
+
+	return numberOfProducts
+}
+
 func MakeMachine(numberOfBuckets int, numberOfProductsInBucket int) Machine {
 	buckets := make(map[int]Bucket)
 
