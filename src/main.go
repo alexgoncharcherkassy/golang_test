@@ -89,7 +89,7 @@ func GetProducts(m machine.Machine, products []int) {
 		return
 	}
 
-	fmt.Println(products)
+	PrintFoundProducts(foundProducts)
 	PrintMachine(m)
 }
 
@@ -134,5 +134,12 @@ func PrintMachine(m machine.Machine) {
 		fmt.Printf("(%v)  ", len(m.Buckets()[i].Elements()))
 	}
 
+	fmt.Println()
+}
+
+func PrintFoundProducts(products []int) {
+	for _, val := range products {
+		fmt.Printf(" %v ", val)
+	}
 	fmt.Println()
 }
