@@ -21,14 +21,14 @@ func MakeBucket(size int) Bucket {
 	}
 }
 
-func (b *Bucket) Push(element product.Product) error {
+func (b *Bucket) Push(element product.Product) (*product.Product, error) {
 	if len(b.elements) < b.size {
 		b.elements = append(b.elements, element)
 
-		return nil
+		return &element, nil
 	}
 
-	return errors.New("bucket full")
+	return nil, errors.New("bucket full")
 }
 
 func (b *Bucket) Pop() (*product.Product, error) {
@@ -92,4 +92,14 @@ func (b *Bucket) GetElemIfPresentOnFirstPosition(productName int) (*product.Prod
 	} else {
 		return nil, errors.New("not found")
 	}
+}
+
+func (b *Bucket) GetElemByNameAdnPosition(productName int, position int) (*product.Product, error) {
+	for key, val := range b.elements {
+		if key == position && val.Name() == productName {
+			return &val, nil
+		}
+	}
+
+	return nil, errors.New("product not found")
 }

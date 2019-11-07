@@ -9,6 +9,8 @@ type Machine struct {
 	buckets         map[int]Bucket
 	numberOfBuckets int
 	bucketSize      int
+	tmpResult       map[int][]int
+	tmpSum          int
 }
 
 func (m Machine) Buckets() map[int]Bucket {
@@ -39,14 +41,14 @@ func (m Machine) GetCurrentNumberOfProducts(bucketNumber int) int {
 	return numberOfProducts
 }
 
-func MakeMachine(numberOfBuckets int, numberOfProductsInBucket int) Machine {
+func MakeMachine(numberOfBuckets int, numberOfProductsInBucket int) *Machine {
 	buckets := make(map[int]Bucket)
 
 	for i := 1; i <= numberOfBuckets; i++ {
 		buckets[len(buckets)+1] = MakeBucket(numberOfProductsInBucket)
 	}
 
-	return Machine{buckets, numberOfBuckets, numberOfProductsInBucket}
+	return &Machine{buckets, numberOfBuckets, numberOfProductsInBucket, map[int][]int{}, 0}
 }
 
 func InArray(needle int, source []int) bool {
@@ -95,30 +97,81 @@ func findAvailableProducts(m *Machine, products []int) map[int][]int {
 	return result
 }
 
-func (m *Machine) GetProducts(products []int) ([]int, error) {
-	result := findAvailableProducts(m, products)
+func calculate(m *Machine, result map[int][]int) (int, error) {
+	var sum int
+
+	for bucketNumber, item := range result {
+		for key, val := range item {
+			bucket := m.buckets[bucketNumber]
+
+			productItem, err := bucket.GetElemByNameAdnPosition(val, key)
+
+			if err != nil {
+				return 0, err
+			}
+
+			sum = sum + productItem.Price().Amount()
+		}
+	}
+
+	return sum, nil
+}
+
+func (m *Machine) GetProducts(products []int, preSale bool) ([]int, int, error) {
+	result := map[int][]int{}
+
+	if preSale == true {
+		result = findAvailableProducts(m, products)
+	}
 
 	var foundProducts []int
+	var sum int
 
-	if len(result) > 0 {
-		processedBuckets := map[int]int{}
+	processedBuckets := map[int]int{}
 
+	if preSale == true {
 		result = CompareProductsWithOrder(result, products, processedBuckets, -1, -1)
 
-		for bucketNumber, item := range result {
+		if len(result) == 0 {
+			return foundProducts, sum, errors.New("impossible")
+		}
+
+		calcResult, err := calculate(m, result)
+
+		if err != nil {
+			return []int{}, 0, err
+		}
+
+		sum = calcResult
+	}
+
+	if preSale == false {
+		sum = m.tmpSum
+
+		if len(m.tmpResult) == 0 {
+			return foundProducts, sum, errors.New("you should make order")
+		}
+
+		for bucketNumber, item := range m.tmpResult {
 			for _, val := range item {
-				pr, err := m.GetProductFromBucket(val, bucketNumber)
+				pr, err := m.SaleProductFromBucket(val, bucketNumber)
 
 				if err != nil {
-					return []int{}, err
+					return []int{}, 0, err
 				}
 
 				foundProducts = append(foundProducts, pr.Name())
 			}
 		}
+
+		m.tmpResult = map[int][]int{}
+		m.tmpSum = 0
+	} else {
+		m.tmpResult = result
+		m.tmpSum = sum
 	}
 
-	return foundProducts, nil
+	return foundProducts, sum, nil
 }
 
 func DiffSlice(slice1, slice2 []int) []int {
@@ -172,6 +225,10 @@ func CompareProductsWithOrder(result map[int][]int, products []int, processedBuc
 	var baseBucketItem []int
 	var baseBucketNumber int
 	tmpResult := map[int][]int{}
+
+	if len(result) == 0 {
+		return tmpResult
+	}
 
 	if baseBucket >= 0 {
 		baseBucketItem = MakeCopy(result[baseBucket])
@@ -252,13 +309,13 @@ func CompareProductsWithOrder(result map[int][]int, products []int, processedBuc
 	return tmpResult
 }
 
-func (m *Machine) AddProduct(productName int, numberOfBucket int) error {
+func (m *Machine) AddProduct(productName int, numberOfBucket int, price int) error {
 	if numberOfBucket > len(m.buckets) || numberOfBucket < 1 {
 		return errors.New("incorrect bucket")
 	}
 
 	bucket := m.buckets[numberOfBucket]
-	err := bucket.Push(product.MakeProduct(productName))
+	_, err := bucket.Push(product.MakeProduct(productName, product.MakePrice(price)))
 
 	if err != nil {
 		return err
@@ -269,7 +326,7 @@ func (m *Machine) AddProduct(productName int, numberOfBucket int) error {
 	return nil
 }
 
-func (m *Machine) GetProductFromBucket(productName int, numberOfBucket int) (*product.Product, error) {
+func (m *Machine) SaleProductFromBucket(productName int, numberOfBucket int) (*product.Product, error) {
 	if numberOfBucket > len(m.buckets) || numberOfBucket < 1 {
 		return nil, errors.New("incorrect bucket")
 	}

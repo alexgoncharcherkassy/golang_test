@@ -10,9 +10,9 @@ import (
 )
 
 func main() {
-	vendingMachine := machine.MakeMachine(4, 5)
+	vehicleMachine := machine.MakeMachine(4, 5)
 
-	fmt.Println("Enter: exit - for close app; 1 - for add product; 2 - for get products")
+	fmt.Println("Enter: exit - close app; 1 - add product; 2 - make an order; 3 - purchase")
 	fmt.Print("Choose operation: ")
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -28,19 +28,28 @@ func main() {
 			for key, val := range enteredData {
 				bucket := strings.Split(val, ",")
 
-				for _, name := range bucket {
-					if name != "" {
-						i1, err := strconv.Atoi(name)
-						if err != nil {
-							fmt.Println(err)
-						} else {
-							AddProduct(vendingMachine, i1, key+1)
+				for _, item := range bucket {
+					if item != "" {
+						parsedItem := strings.Split(item, "->")
+
+						if len(parsedItem) == 2 {
+							if parsedItem[0] != "" && parsedItem[1] != "" {
+								name, err1 := strconv.Atoi(parsedItem[0])
+								price, err2 := strconv.Atoi(parsedItem[1])
+
+								if err1 != nil || err2 != nil {
+									fmt.Println(err1)
+									fmt.Println(err2)
+								} else {
+									AddProduct(vehicleMachine, name, key+1, price)
+								}
+							}
 						}
 					}
 				}
 			}
 
-			PrintMachine(vendingMachine)
+			PrintMachine(vehicleMachine)
 			break
 		case "2":
 			enteredData := ParseGetting()
@@ -55,7 +64,10 @@ func main() {
 				}
 			}
 
-			GetProducts(vendingMachine, products)
+			GetProducts(vehicleMachine, products, true)
+			break
+		case "3":
+			GetProducts(vehicleMachine, []int{}, false)
 			break
 		}
 
@@ -67,8 +79,8 @@ func main() {
 	}
 }
 
-func AddProduct(m machine.Machine, nameProduct int, numberOfBucket int) {
-	err := m.AddProduct(nameProduct, numberOfBucket)
+func AddProduct(m *machine.Machine, nameProduct int, numberOfBucket int, price int) {
+	err := m.AddProduct(nameProduct, numberOfBucket, price)
 
 	if err != nil {
 		fmt.Println(err)
@@ -76,21 +88,19 @@ func AddProduct(m machine.Machine, nameProduct int, numberOfBucket int) {
 	}
 }
 
-func GetProducts(m machine.Machine, products []int) {
-	foundProducts, err := m.GetProducts(products)
+func GetProducts(m *machine.Machine, products []int, preSale bool) {
+	foundProducts, sum, err := m.GetProducts(products, preSale)
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	if len(foundProducts) == 0 {
-		fmt.Println("impossible")
-		return
+	PrintSum(sum)
+	if preSale == false {
+		PrintFoundProducts(foundProducts)
+		PrintMachine(m)
 	}
-
-	PrintFoundProducts(foundProducts)
-	PrintMachine(m)
 }
 
 func ParseAdding() []string {
@@ -122,7 +132,7 @@ func ParseGetting() []string {
 	return strings.Split(text, ",")
 }
 
-func PrintMachine(m machine.Machine) {
+func PrintMachine(m *machine.Machine) {
 	fmt.Println("-------------------------")
 
 	for i := 1; i <= len(m.Buckets()); i++ {
@@ -133,13 +143,20 @@ func PrintMachine(m machine.Machine) {
 		fmt.Print("] ")
 		fmt.Printf("(%v)  ", m.GetCurrentNumberOfProducts(i))
 	}
-	fmt.Printf("  Total number of products: %v", m.GetCurrentNumberOfProducts(-1))
+	fmt.Printf("  Total number of products in machine: %v", m.GetCurrentNumberOfProducts(-1))
 	fmt.Println()
 }
 
 func PrintFoundProducts(products []int) {
+	fmt.Print("Items in order getting: ")
+
 	for _, val := range products {
 		fmt.Printf(" %v ", val)
 	}
+
 	fmt.Println()
+}
+
+func PrintSum(sum int) {
+	fmt.Printf("Total order sum: %v\n", sum)
 }
