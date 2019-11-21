@@ -133,7 +133,7 @@ func (m *Machine) GetProducts(products []int, preSale bool) ([]int, int, error) 
 		result = CompareProductsWithOrder(result, products, processedBuckets, -1, -1)
 
 		if len(result) == 0 {
-			return foundProducts, sum, errors.New("impossible")
+			return []int{}, sum, errors.New("impossible")
 		}
 
 		calcResult, err := calculate(m, result)
@@ -149,7 +149,7 @@ func (m *Machine) GetProducts(products []int, preSale bool) ([]int, int, error) 
 		sum = m.tmpSum
 
 		if len(m.tmpResult) == 0 {
-			return foundProducts, sum, errors.New("you should make order")
+			return []int{}, sum, errors.New("you should make order")
 		}
 
 		for bucketNumber, item := range m.tmpResult {

@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	vehicleMachine := machine.MakeMachine(4, 5)
+	vendingMachine := machine.MakeMachine(4, 5)
 
 	fmt.Println("Enter: exit - close app; 1 - add product; 2 - make an order; 3 - purchase")
 	fmt.Print("Choose operation: ")
@@ -41,7 +41,7 @@ func main() {
 									fmt.Println(err1)
 									fmt.Println(err2)
 								} else {
-									AddProduct(vehicleMachine, name, key+1, price)
+									AddProduct(vendingMachine, name, key+1, price)
 								}
 							}
 						}
@@ -49,7 +49,7 @@ func main() {
 				}
 			}
 
-			PrintMachine(vehicleMachine)
+			PrintMachine(vendingMachine)
 			break
 		case "2":
 			enteredData := ParseGetting()
@@ -64,10 +64,10 @@ func main() {
 				}
 			}
 
-			GetProducts(vehicleMachine, products, true)
+			GetProducts(vendingMachine, products, true)
 			break
 		case "3":
-			GetProducts(vehicleMachine, []int{}, false)
+			GetProducts(vendingMachine, []int{}, false)
 			break
 		}
 
